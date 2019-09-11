@@ -12,5 +12,5 @@ test:
 bench:
 	go test ./... -run=XX -bench=. -test.benchmem
 
-travis-ci: setup
+travis-ci:
 	go test -v ./... -race -coverprofile=coverage.txt -covermode=atomic

@@ -45,9 +45,43 @@ func TestQuotaCountMax(t *testing.T) {
 	// wait till all tokens are given out
 	time.Sleep(10 * time.Second)
 
+	m.mu.Lock()
 	for k, r := range m.rules {
 		if r.count != r.maxQueries {
 			t.Fatalf("Expected %d tokens available but got %d, for %s", r.maxQueries, r.count, k)
 		}
 	}
+	m.mu.Unlock()
+}
+
+func BenchmarkQuotaUpdateMillionKeys(b *testing.B) {
+	m := newManager()
+
+	for i := 0; i < 10000; i++ {
+		m.addRule(string(i), newRule(1, 30*time.Second))
+	}
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		m.addTokens()
+	}
+}
+
+func BenchmarkQuotaUseMillionKeys(b *testing.B) {
+	m := newManager()
+	m.run()
+
+	numKeys := 10000
+	for i := 0; i < numKeys; i++ {
+		m.addRule(string(i), newRule(1, 5*time.Second))
+	}
+	time.Sleep(6 * time.Second)
+
+	b.ResetTimer()
+	var numOk int
+	for n := 0; n < b.N; n++ {
+		if ok, err := m.useToken(string(n % numKeys)); err == nil && ok {
+			numOk++
+		}
+	}
+	b.Logf("Got %d ok out of %d", numOk, b.N)
 }

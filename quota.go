@@ -39,8 +39,8 @@ func (m *manager) run() {
 }
 
 func (m *manager) addTokens() {
-	start := time.Now()
 	m.mu.Lock()
+	start := time.Now()
 	for _, r := range m.rules {
 		r.addToken(m.updateRate)
 	}

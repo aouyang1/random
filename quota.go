@@ -44,6 +44,7 @@ func (m *manager) addTokens() {
 	for _, r := range m.rules {
 		r.addToken(m.updateRate)
 	}
+
 	m.lastUpdateDuration = time.Now().Sub(start)
 	m.mu.Unlock()
 }

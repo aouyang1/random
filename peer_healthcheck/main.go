@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -195,7 +196,7 @@ func main() {
 	peers.Reload(nodes)
 
 	go func() {
-		ticker := time.NewTicker(c.ConfigRefreshInterval)
+		ticker := time.NewTicker(config.ConfigRefreshInterval)
 		for {
 			select {
 			case <-ticker.C:
@@ -216,15 +217,15 @@ func main() {
 		for {
 			select {
 			case <-ticker.C:
-				fmt.Printf("Node: %s, %v\n", *node, peers.Alive(c.AliveWindow))
+				fmt.Printf("Node: %s, %v\n", *node, peers.Alive(config.AliveWindow))
 			}
 		}
 	}()
 
-	go peers.Broadcast()
+	go peers.Broadcast(config)
 
 	mux := http.NewServeMux()
 	mux.Handle("/heartbeat", http.HandlerFunc(heartbeat))
 
-	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(c.ListenPort), mux))
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(config.ListenPort), mux))
 }

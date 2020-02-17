@@ -35,3 +35,31 @@ services:
       - NODE=node4
     volumes:
       - ".:/go/src/app"
+  node5:
+    image: "peer-nodes"
+    container_name: "node5"
+    environment:
+      - NODE=node5
+    volumes:
+      - ".:/go/src/app"
+  node6:
+    image: "peer-nodes"
+    container_name: "node6"
+    environment:
+      - NODE=node6
+    volumes:
+      - ".:/go/src/app"
+  node7:
+    image: "peer-nodes"
+    container_name: "node7"
+    environment:
+      - NODE=node7
+    volumes:
+      - ".:/go/src/app"
+  node8:
+    image: "peer-nodes"
+    container_name: "node8"
+    environment:
+      - NODE=node8
+    volumes:
+      - ".:/go/src/app"

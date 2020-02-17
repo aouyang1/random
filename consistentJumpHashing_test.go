@@ -5,6 +5,16 @@ import (
 	"testing"
 )
 
+func BenchmarkJumpConsistentHash(b *testing.B) {
+	numBuckets := 10
+	key := rand.Uint64()
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < 1e6; j++ {
+			JumpConsistentHash(key, numBuckets)
+		}
+	}
+}
+
 func TestJumpConsistentHash(t *testing.T) {
 	numKeys := 3
 	for numBuckets := 1; numBuckets < 15; numBuckets++ {
@@ -19,7 +29,7 @@ func TestJumpConsistentHash(t *testing.T) {
 
 func TestJumpConsistentHashDist(t *testing.T) {
 	numKeys := 1000000
-	numBuckets := 32
+	numBuckets := 256
 
 	ba := make([][]uint64, numBuckets)
 

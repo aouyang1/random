@@ -1,0 +1,65 @@
+version: '3'
+services:
+  node0:
+    image: "peer-nodes"
+    container_name: "node0"
+    environment:
+      - NODE=node0
+    volumes:
+      - ".:/go/src/app"
+  node1:
+    image: "peer-nodes"
+    container_name: "node1"
+    environment:
+      - NODE=node1
+    volumes:
+      - ".:/go/src/app"
+  node2:
+    image: "peer-nodes"
+    container_name: "node2"
+    environment:
+      - NODE=node2
+    volumes:
+      - ".:/go/src/app"
+  node3:
+    image: "peer-nodes"
+    container_name: "node3"
+    environment:
+      - NODE=node3
+    volumes:
+      - ".:/go/src/app"
+  node4:
+    image: "peer-nodes"
+    container_name: "node4"
+    environment:
+      - NODE=node4
+    volumes:
+      - ".:/go/src/app"
+  node5:
+    image: "peer-nodes"
+    container_name: "node5"
+    environment:
+      - NODE=node5
+    volumes:
+      - ".:/go/src/app"
+  node6:
+    image: "peer-nodes"
+    container_name: "node6"
+    environment:
+      - NODE=node6
+    volumes:
+      - ".:/go/src/app"
+  node7:
+    image: "peer-nodes"
+    container_name: "node7"
+    environment:
+      - NODE=node7
+    volumes:
+      - ".:/go/src/app"
+  node8:
+    image: "peer-nodes"
+    container_name: "node8"
+    environment:
+      - NODE=node8
+    volumes:
+      - ".:/go/src/app"

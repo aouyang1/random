@@ -33,49 +33,44 @@ func (l *LRU) Put(k string, v string) {
 	l.Lock()
 	defer l.Unlock()
 	val, exists := l.cache[k]
-	if !exists {
-		// we are exceeding the lru size so prune the tail
-		if len(l.cache) == l.size {
-			// update tail
-			currTail := l.tail
-			if currTail.prev != nil {
-				l.tail = currTail.prev
-				l.tail.next = nil
-			}
-
-			// remove the tail
-			delete(l.cache, currTail.k)
+	if exists {
+		// reuse existing value struct to save on gc. no change in length of cache.
+		val.v = v
+		if l.head != val {
+			l.makeHead(val)
 		}
-
-		val = &value{k: k, v: v}
-
-		// insert
-		l.cache[k] = val
-
-		// update head
-		// check if there is a head (first entry into lru)
-		if l.head == nil {
-			l.head = val
-			l.tail = val
-			return
-		}
-
-		// push back head since there is one present
-		l.head.prev = val
-		val.next = l.head
-		l.head = val
 		return
 	}
 
-	// reuse existing value struct to save on gc. no change in length of cache.
-	val.v = v
-	if l.head != val {
-		// if it's not currently the head, make it so
-		l.head.prev = val
-		val.next = l.head
-		l.head = val
+	// we are exceeding the lru size so prune the tail
+	if len(l.cache) == l.size {
+		// update tail
+		currTail := l.tail
+		if currTail.prev != nil {
+			l.tail = currTail.prev
+			l.tail.next = nil
+		}
+
+		// remove the tail
+		delete(l.cache, currTail.k)
 	}
+
+	val = &value{k: k, v: v}
+
+	// insert
+	l.cache[k] = val
+
+	// update head
+	// check if there is a head (first entry into lru)
+	if l.head == nil {
+		l.head = val
+		l.tail = val
+		return
+	}
+
+	l.makeHead(val)
 	return
+
 }
 
 func (l *LRU) Get(k string) (string, error) {
@@ -102,11 +97,7 @@ func (l *LRU) Get(k string) (string, error) {
 			val.next.prev = val.prev
 		}
 
-		// if it's not currently the head, make it so
-		l.head.prev = val
-		val.next = l.head
-		val.prev = nil
-		l.head = val
+		l.makeHead(val)
 	}
 
 	return val.v, nil
@@ -134,4 +125,11 @@ func (l *LRU) Elements() []string {
 		v = v.next
 	}
 	return elem
+}
+
+func (l *LRU) makeHead(v *value) {
+	l.head.prev = v
+	v.next = l.head
+	v.prev = nil
+	l.head = v
 }

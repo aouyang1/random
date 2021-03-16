@@ -1,157 +1,112 @@
 package random
 
 import (
-	"fmt"
 	"testing"
 )
 
-func TestLRU(t *testing.T) {
-	var val string
-	var err error
-
-	size := 4
-	lru := NewLRU(size)
-	lru.Put("a", "apple")
-	if lru.Size() != 1 {
-		t.Errorf("expected lru size of 1, but got, %d", lru.Size())
-		return
-	}
-	t.Log(lru.Elements())
-	// a
-
-	val, err = lru.Get("a")
-	if err = checkValErr(val, err, "apple"); err != nil {
-		t.Error(err)
-		return
-	}
-	t.Log(lru.Elements())
-	// a
-
-	lru.Put("b", "bear")
-	if lru.Size() != 2 {
-		t.Errorf("expected lru size of 2, but got, %d", lru.Size())
-		return
-	}
-	t.Log(lru.Elements())
-	// b a
-
-	lru.Put("c", "corn")
-	if lru.Size() != 3 {
-		t.Errorf("expected lru size of 3, but got, %d", lru.Size())
-		return
-	}
-	t.Log(lru.Elements())
-	// c b a
-
-	lru.Put("d", "deer")
-	if lru.Size() != 4 {
-		t.Errorf("expected lru size of 4, but got, %d", lru.Size())
-		return
-	}
-	t.Log(lru.Elements())
-	// d c b a
-
-	val, err = lru.Get("a")
-	if err = checkValErr(val, err, "apple"); err != nil {
-		t.Error(err)
-		return
-	}
-	t.Log(lru.Elements())
-	// a d c b
-
-	val, err = lru.Get("b")
-	if err = checkValErr(val, err, "bear"); err != nil {
-		t.Error(err)
-		return
-	}
-	t.Log(lru.Elements())
-	// b a d c
-
-	val, err = lru.Get("c")
-	if err = checkValErr(val, err, "corn"); err != nil {
-		t.Error(err)
-		return
-	}
-	t.Log(lru.Elements())
-	// c b a d
-
-	val, err = lru.Get("d")
-	if err = checkValErr(val, err, "deer"); err != nil {
-		t.Error(err)
-		return
-	}
-	t.Log(lru.Elements())
-	// d c b a
-
-	// exceeding lru size
-	lru.Put("e", "elephant")
-	if lru.Size() != 4 {
-		t.Errorf("expected lru size of 4, but got, %d", lru.Size())
-		return
-	}
-	t.Log(lru.Elements())
-	// e d c b
-
-	val, err = lru.Get("a")
-	if err = checkValErr(val, err, "apple"); err == nil {
-		t.Errorf("expected 'a' to not exist, but does")
-		return
-	}
-
-	val, err = lru.Get("e")
-	if err = checkValErr(val, err, "elephant"); err != nil {
-		t.Error(err)
-		return
-	}
-	t.Log(lru.Elements())
-	// e d c b
-
-	val, err = lru.Get("b")
-	if err = checkValErr(val, err, "bear"); err != nil {
-		t.Error(err)
-		return
-	}
-	t.Log(lru.Elements())
-	// b e d c
-
-	lru.Put("f", "fairy")
-	if lru.Size() != 4 {
-		t.Errorf("expected lru size of 4, but got, %d", lru.Size())
-		return
-	}
-	t.Log(lru.Elements())
-	// f b e d
-
-	val, err = lru.Get("c")
-	if err = checkValErr(val, err, "corn"); err == nil {
-		t.Error("expected 'c' to not exist, but does")
-		return
-	}
-
-	val, err = lru.Get("d")
-	if err = checkValErr(val, err, "deer"); err != nil {
-		t.Error(err)
-		return
-	}
-	t.Log(lru.Elements())
-	// d f b e
-
-	val, err = lru.Get("b")
-	if err = checkValErr(val, err, "bear"); err != nil {
-		t.Error(err)
-		return
-	}
-	t.Log(lru.Elements())
-	// b d f e
-
+type testDataLRU struct {
+	size     int
+	ops      []lruOP
+	expected []*expectedLRU
 }
 
-func checkValErr(val string, err error, exp string) error {
-	if err != nil {
-		return err
+type lruOP struct {
+	op  string
+	key string
+	val string
+}
+
+type expectedLRU struct {
+	val string
+	err error
+}
+
+func TestLRU(t *testing.T) {
+	testData := []testDataLRU{
+		{
+			4,
+			[]lruOP{
+				{"put", "a", "apple"},
+				{"get", "a", ""},
+				{"put", "b", "bear"},
+				{"put", "c", "corn"},
+				{"put", "d", "deer"},
+				{"get", "a", ""},
+				{"get", "b", ""},
+				{"get", "c", ""},
+				{"get", "d", ""},
+				{"put", "e", "elephant"},
+				{"get", "a", ""},
+				{"get", "e", ""},
+				{"get", "b", ""},
+				{"put", "f", "fairy"},
+				{"get", "c", ""},
+				{"get", "d", ""},
+				{"get", "b", ""},
+			},
+			[]*expectedLRU{
+				nil,
+				&expectedLRU{"apple", nil},
+				nil,
+				nil,
+				nil,
+				&expectedLRU{"apple", nil},
+				&expectedLRU{"bear", nil},
+				&expectedLRU{"corn", nil},
+				&expectedLRU{"deer", nil},
+				nil,
+				&expectedLRU{"", errNoKey},
+				&expectedLRU{"elephant", nil},
+				&expectedLRU{"bear", nil},
+				nil,
+				&expectedLRU{"", errNoKey},
+				&expectedLRU{"deer", nil},
+				&expectedLRU{"bear", nil},
+			},
+		},
+		{
+			2,
+			[]lruOP{
+				{"put", "2", "1"},
+				{"put", "1", "1"},
+				{"put", "2", "3"},
+				{"put", "4", "1"},
+				{"get", "1", ""},
+				{"get", "2", ""},
+			},
+			[]*expectedLRU{
+				nil,
+				nil,
+				nil,
+				nil,
+				&expectedLRU{"", errNoKey},
+				&expectedLRU{"3", nil},
+			},
+		},
 	}
-	if val != exp {
-		return fmt.Errorf("expected %q but got %q\n", exp, val)
+	for _, td := range testData {
+		lru := NewLRU(td.size)
+		for i, ops := range td.ops {
+			switch ops.op {
+			case "get":
+				val, err := lru.Get(ops.key)
+				exp := td.expected[i]
+				if exp == nil {
+					t.Error("should have gotten a result")
+					return
+				}
+				if exp.err != err {
+					t.Errorf("expected error %v, but got %v", exp.err, err)
+					return
+				}
+				if exp.val != val {
+					t.Errorf("expected value, %s, but got %s", exp.val, val)
+					return
+				}
+			case "put":
+				lru.Put(ops.key, ops.val)
+			}
+		}
 	}
-	return nil
+
 }

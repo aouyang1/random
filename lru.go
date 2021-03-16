@@ -1,8 +1,13 @@
 package random
 
 import (
+	"errors"
 	"fmt"
 	"sync"
+)
+
+var (
+	errNoKey = errors.New("key does not exist")
 )
 
 type LRU struct {
@@ -78,7 +83,7 @@ func (l *LRU) Get(k string) (string, error) {
 	defer l.Unlock()
 	val, exists := l.cache[k]
 	if !exists {
-		return "", fmt.Errorf("key %q does not exist", k)
+		return "", errNoKey
 	}
 
 	if l.tail == val {

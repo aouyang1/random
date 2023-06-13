@@ -83,3 +83,29 @@ func (g *Group) Search(lv LabelValues) []LabelValues {
 	}
 	return out
 }
+
+// NaiveSearch goes through each attribute and looks for a valid label value to return
+func (g *Group) NaiveSearch(lv LabelValues) []LabelValues {
+	var res []LabelValues
+	for _, attr := range g.Attributes {
+		if !valid(lv, attr) {
+			continue
+		}
+		res = append(res, attr)
+	}
+	return res
+}
+
+func valid(lv, attr LabelValues) bool {
+	for l, v := range lv {
+		val, exists := attr[l]
+		if !exists {
+			return false
+		}
+		if val != v {
+			return false
+		}
+	}
+	return true
+
+}

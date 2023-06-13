@@ -1,7 +1,7 @@
-package main
+package bitmap
 
 type Container struct {
-	Bitmap []uint64 `json:"Bitmap"`
+	Bitmap []uint64 `json:"bitmap"`
 }
 
 func NewContainer() *Container {
